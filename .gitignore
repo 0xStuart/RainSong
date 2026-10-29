@@ -1,0 +1,8 @@
+.pio/
+build/
+.gradle/
+*.apk
+local.properties
+.idea/
+*.gcode
+presentation/renders/
