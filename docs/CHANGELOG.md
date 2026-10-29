@@ -2,6 +2,9 @@
 
 ## 2026-10-29
 
+- `mechanical.md`: electronics box (20 × 113.3 × 90 mm) hangs off the
+  split with 3 mm wings, USB-C floor slot, Ø6 back hole, and a slot-in
+  lid (3 mm cover + hollow plug). Reason: Stuart.
 - `mechanical.md`: joint flare is +15 mm inward on each long side, 20 mm
   from the break. Reason: Stuart.
 - `mechanical.md`: solar panel frame sits at 40° with 20 mm floor clearance

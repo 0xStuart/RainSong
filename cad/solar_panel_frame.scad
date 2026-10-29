@@ -15,12 +15,17 @@
 // +X along panel length (base → far end), +Y across the width, +Z up.
 //
 // part:
-//   "assembled"  both halves, sitting on the floor at tilt_deg
+//   "assembled"  both halves + electronics box, sitting on the floor
 //   "base"       piece from the base end to the split (grooves + side wedges)
 //   "far"        piece from the split to the far end (tongues)
+//   "box"        electronics box, closed back against the split, outside
+//                (assembled preview: slid +X by explode, like the far half)
+//   "lid"        slot-in lid for the box (top down, plug up)
 //
 // Override from the CLI, e.g.:
 //   openscad -D 'part="base"' -D split_frac=0.70 -o frame_base.stl solar_panel_frame.scad
+//   openscad -D 'part="box"' -o electronics_box.stl solar_panel_frame.scad
+//   openscad -D 'part="lid"' -o electronics_box_lid.stl solar_panel_frame.scad
 
 part = "assembled";
 
@@ -65,7 +70,38 @@ explode = 20;           // mm, assembled preview: slide the far half +X to show 
 flare_extra = 15.0;     // mm, each side
 flare_len   = 20.0;     // mm, from the break
 
+// Electronics box: fully below the frame, hanging off the split (outside
+// the base half). Closed back against the split face; open toward the far
+// end. 3 mm wings flush with that back, 24 mm wide (rail + flare), screw
+// into the split face of the supports. No holes in the long-side rails.
+box_depth      = 20.0;  // mm, along X, closed back at the split
+box_z          = 90.0;  // mm, along Z, hanging down from the rim
+box_wall       = 3.0;   // mm, walls and wings
+box_under      = 1.0;   // mm, gap from the frame underside down to the box top
+box_y_clear    = 0.6;   // mm, each side, aligned with the flare inner faces
+screw_d        = 3.2;   // mm, M3 clearance through the wings
+insert_d       = 3.9;   // mm, heat-set insert in the support legs
+insert_depth   = 6.0;   // mm, into the flare from the split face
+screw_edge     = 8.0;   // mm, hole centre in from the wing rim (Z)
+screw_from_box = 11.0;  // mm, hole centre out from the flare inner face (Y)
+
+// USB-C through the floor, back-left corner. Board is glued to the closed
+// back, so the hole sits against the base. Generous vs a ~9 × 3.2 mm plug.
+usb_slot_x     = 12.0;  // mm, along box depth
+usb_slot_y     = 18.0;  // mm, along box width
+usb_from_left  = 20.0;  // mm, extra inset from the left inner wall
+base_hole_d    = 6.0;   // mm, through the closed back, top centre
+
+// Lid slots into the open end of the box. Top face sits on the bed.
+lid_clear      = 0.4;   // mm, each side, so it slides in
+lid_cap        = 3.0;   // mm, outer plate (same as the walls)
+lid_plug       = 5.0;   // mm, inner plug depth
+lid_plug_inset = 1.2;   // mm, extra shrink of the plug for a lead-in
+lid_rim        = 3.0;   // mm, frame left after hollowing the middle
+lid_gap        = 20.0;  // mm, assembled preview: sit this far beside the frame
+
 eps = 0.02;
+$fn = 32;
 
 outer_length = rail_base + panel_length + rail_end;
 outer_width  = rail_long + panel_width + rail_long;
@@ -84,6 +120,28 @@ function rail_ys() = [rail_long / 2, outer_width - rail_long / 2];
 // Extra side depth under the 15 mm frame, from base to the break.
 function side_drop(x) = floor_clearance + x * tan(tilt_deg);
 function drop_at_break() = side_drop(base_face());
+
+function box_outer_y() = panel_width - 2 * flare_extra - 2 * box_y_clear;
+function box_z_top() = -box_under;
+function box_z_bot() = box_z_top() - box_z;
+function box_x0() = base_face();
+function box_y0() = rail_long + flare_extra + box_y_clear;
+function wing_width() = rail_long + flare_extra;
+function wing_span() = box_y_clear + wing_width();
+function wing_x0() = box_x0();
+
+function screw_ys() = [
+    rail_long + flare_extra - screw_from_box,
+    outer_width - rail_long - flare_extra + screw_from_box
+];
+function screw_zs() = [
+    box_z_bot() + screw_edge,
+    box_z_top() - screw_edge
+];
+
+function lid_y() = box_outer_y() - 2 * box_wall - 2 * lid_clear;
+function lid_z() = box_z - 2 * box_wall - 2 * lid_clear;
+function lid_cut() = lid_plug_inset + lid_rim;
 
 assert(
     split_x() >= rail_base + groove_d() + 2,
@@ -104,6 +162,20 @@ echo(tilt_deg = tilt_deg, floor_clearance = floor_clearance);
 echo(side_drop_base = floor_clearance, side_drop_break = drop_at_break());
 echo(side_height_break = drop_at_break() + frame_height);
 echo(flare_extra = flare_extra, flare_len = flare_len);
+echo(box_outer = [box_depth, box_outer_y(), box_z]);
+echo(box_z_range = [box_z_bot(), box_z_top()]);
+echo(box_inner = [
+    box_depth - box_wall,
+    box_outer_y() - 2 * box_wall,
+    box_z - 2 * box_wall
+]);
+echo(usb_slot = [usb_slot_x, usb_slot_y]);
+echo(base_hole_d = base_hole_d);
+echo(lid = [lid_y(), lid_z(), lid_cap + lid_plug]);
+echo(lid_opening = [
+    lid_y() - 2 * lid_cut(),
+    lid_z() - 2 * lid_cut()
+]);
 
 module base_cutout() {
     translate([
@@ -187,6 +259,100 @@ module flare_far() {
             cube([flare_len, flare_extra, frame_height]);
 }
 
+module electronics_box() {
+    difference() {
+        union() {
+            translate([box_x0(), box_y0(), box_z_bot()])
+                cube([box_depth, box_outer_y(), box_z]);
+            translate([
+                wing_x0(),
+                box_y0() - wing_span(),
+                box_z_bot()
+            ])
+                cube([box_wall, wing_span(), box_z]);
+            translate([
+                wing_x0(),
+                box_y0() + box_outer_y(),
+                box_z_bot()
+            ])
+                cube([box_wall, wing_span(), box_z]);
+        }
+        // Open toward the far end (+X). Closed back (and wings) at the split.
+        translate([
+            box_x0() + box_wall,
+            box_y0() + box_wall,
+            box_z_bot() + box_wall
+        ])
+            cube([
+                box_depth - box_wall + eps,
+                box_outer_y() - 2 * box_wall,
+                box_z - 2 * box_wall
+            ]);
+        for (z = screw_zs())
+            for (y = screw_ys())
+                translate([wing_x0() + box_wall + eps, y, z])
+                    rotate([0, -90, 0])
+                        cylinder(d = screw_d, h = box_wall + 2 * eps);
+        usb_hole();
+        base_hole();
+    }
+}
+
+module usb_hole() {
+    r = usb_slot_x / 2;
+    span = usb_slot_y - usb_slot_x;
+    translate([
+        box_x0() + box_wall + r,
+        box_y0() + box_wall + usb_from_left + r,
+        box_z_bot() - eps
+    ])
+        hull() {
+            cylinder(r = r, h = box_wall + 2 * eps);
+            translate([0, span, 0])
+                cylinder(r = r, h = box_wall + 2 * eps);
+        }
+}
+
+module base_hole() {
+    translate([
+        box_x0() - eps,
+        box_y0() + box_outer_y() / 2,
+        box_z_top() - box_wall - base_hole_d / 2
+    ])
+        rotate([0, 90, 0])
+            cylinder(d = base_hole_d, h = box_wall + 2 * eps);
+}
+
+module lid() {
+    // Top at z = 0 facing down. Solid 3 mm cover; hollow plug extends +Z.
+    render()
+        difference() {
+            union() {
+                cube([lid_y(), lid_z(), lid_cap]);
+                translate([lid_plug_inset, lid_plug_inset, lid_cap - 1])
+                    cube([
+                        lid_y() - 2 * lid_plug_inset,
+                        lid_z() - 2 * lid_plug_inset,
+                        lid_plug + 1
+                    ]);
+            }
+            translate([lid_cut(), lid_cut(), lid_cap])
+                cube([
+                    lid_y() - 2 * lid_cut(),
+                    lid_z() - 2 * lid_cut(),
+                    lid_plug + eps
+                ]);
+        }
+}
+
+module flare_insert_holes() {
+    for (z = screw_zs())
+        for (y = screw_ys())
+            translate([base_face() + eps, y, z])
+                rotate([0, -90, 0])
+                    cylinder(d = insert_d, h = insert_depth + 2 * eps);
+}
+
 module base_half() {
     difference() {
         union() {
@@ -194,13 +360,14 @@ module base_half() {
             side_skirts();
             flare_base();
         }
-        translate([base_face(), -1, -drop_at_break() - 1])
+            translate([base_face(), -1, -drop_at_break() - 1])
             cube([
                 outer_length,
                 outer_width + 2,
                 drop_at_break() + frame_height + 2
             ]);
         grooves();
+        flare_insert_holes();
     }
 }
 
@@ -234,7 +401,13 @@ module assembled() {
         color("Goldenrod")
             translate([explode, 0, 0])
                 far_half();
+        color("Olive")
+            translate([explode, 0, 0])
+                electronics_box();
     }
+    color("Tan")
+        translate([0, -lid_gap - lid_z(), 0])
+            lid();
 }
 
 if (part == "base")
@@ -243,5 +416,13 @@ if (part == "base")
 else if (part == "far")
     translate([-(far_face() - tongue_len), 0, 0])
         far_half();
+else if (part == "box")
+    // Open (far-facing) side on the bed.
+    translate([0, wing_span(), box_depth])
+        rotate([0, 90, 0])
+            translate([-box_x0(), -box_y0(), -box_z_bot()])
+                electronics_box();
+else if (part == "lid")
+    lid();
 else
     assembled();
