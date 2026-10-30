@@ -1,5 +1,10 @@
 # Contract changelog
 
+## 2026-10-30
+
+- `mechanical.md`: frame is 144.5 mm wide (panel glues on top); base print
+  ≤ 220 mm; base cutout is Y 49–80 mm from the far edge. Reason: Stuart.
+
 ## 2026-10-29
 
 - `mechanical.md`: electronics box (20 × 113.3 × 90 mm) hangs off the

@@ -1,5 +1,6 @@
 // RainSong solar-panel frame (not final until Stuart says so)
-// Inner opening: 300 x 144.5 mm.
+// Panel 300 x 144.5 mm glues on top of the frame (not dropped into the
+// opening). Frame is as wide as the panel; 9 mm long rails sit under it.
 // Rails: 9 mm on both long sides, 18 mm far end, 30 mm base end, 15 mm high.
 //
 // Split along the length so it fits a printer bed. The two halves join with
@@ -23,7 +24,7 @@
 //   "lid"        slot-in lid for the box (top down, plug up)
 //
 // Override from the CLI, e.g.:
-//   openscad -D 'part="base"' -D split_frac=0.70 -o frame_base.stl solar_panel_frame.scad
+//   openscad -D 'part="base"' -D split_frac=0.63 -o frame_base.stl solar_panel_frame.scad
 //   openscad -D 'part="box"' -o electronics_box.stl solar_panel_frame.scad
 //   openscad -D 'part="lid"' -o electronics_box_lid.stl solar_panel_frame.scad
 
@@ -39,13 +40,14 @@ rail_base = 30.0;
 
 panel_clearance = 0.0;
 
-// Break location, measured from the base end as a fraction of outer length.
-// 0.70 → 243.6 mm from the base on the default 348 mm frame.
-// Keep the split in the long rails (not in the 30 mm base or 18 mm end).
-split_frac  = 0.70;
-split_x_abs = -1;       // set >= 0 to place the break at an absolute X instead
-
 kerf = 0.2;             // gap between the two printed faces, mm
+
+// Break location, measured from the base end as a fraction of outer length.
+// Default keeps the base print ≤ 220 mm on the 348 mm frame (~0.632).
+// Keep the split in the long rails (not in the 30 mm base or 18 mm end).
+max_base_print = 220.0; // mm, longest the base piece may be
+split_frac  = (max_base_print + kerf / 2) / (rail_base + panel_length + rail_end);
+split_x_abs = -1;       // set >= 0 to place the break at an absolute X instead
 
 // Tongue (far piece) / groove (base piece). Full frame height, through
 // the rail, visible from the top and bottom. Not a hidden joint.
@@ -55,9 +57,12 @@ tongue_h         = frame_height;
 tongue_clearance = 0.30;  // mm, each side of the groove (Y only)
 tongue_extra     = 0.4;   // mm, groove deeper than the tongue
 
-// Notch in the centre of the base end, from the bottom up, through the 30 mm rail.
-base_cutout_w = 29.3;   // mm, across Y, centred
-base_cutout_h = 9.9;    // mm, from Z=0 up
+// Notch in the base end, from the top down, through the 30 mm rail.
+// Y is measured from the far edge (y = outer_width), looking from the
+// lowest (base) end.
+base_cutout_y0 = 49.0;  // mm, start along Y from the far edge
+base_cutout_y1 = 80.0;  // mm, end along Y from the far edge
+base_cutout_h  = 9.9;   // mm, from the top of the frame down
 
 // Sit on the floor at this angle. Side drop is perpendicular to the panel.
 tilt_deg         = 20;
@@ -87,8 +92,8 @@ screw_from_box = 11.0;  // mm, hole centre out from the flare inner face (Y)
 
 // USB-C through the floor, back-left corner. Board is glued to the closed
 // back, so the hole sits against the base. Generous vs a ~9 × 3.2 mm plug.
-usb_slot_x     = 12.0;  // mm, along box depth
-usb_slot_y     = 18.0;  // mm, along box width
+usb_slot_x     = 10.0;  // mm, along box depth
+usb_slot_y     = 20.0;  // mm, along box width
 usb_from_left  = 20.0;  // mm, extra inset from the left inner wall
 base_hole_d    = 6.0;   // mm, through the closed back, top centre
 
@@ -104,7 +109,7 @@ eps = 0.02;
 $fn = 32;
 
 outer_length = rail_base + panel_length + rail_end;
-outer_width  = rail_long + panel_width + rail_long;
+outer_width  = panel_width;  // panel sits on top; no extra width outside the rails
 
 function split_x() =
     split_x_abs >= 0 ? split_x_abs : split_frac * outer_length;
@@ -121,7 +126,8 @@ function rail_ys() = [rail_long / 2, outer_width - rail_long / 2];
 function side_drop(x) = floor_clearance + x * tan(tilt_deg);
 function drop_at_break() = side_drop(base_face());
 
-function box_outer_y() = panel_width - 2 * flare_extra - 2 * box_y_clear;
+function opening_width() = outer_width - 2 * rail_long;
+function box_outer_y() = opening_width() - 2 * flare_extra - 2 * box_y_clear;
 function box_z_top() = -box_under;
 function box_z_bot() = box_z_top() - box_z;
 function box_x0() = base_face();
@@ -157,7 +163,8 @@ echo(split_x = split_x(), split_frac = split_frac);
 echo(base_len = base_face(), far_len = outer_length - far_face() + tongue_len);
 echo(tongue = [tongue_len, tongue_w, tongue_h]);
 echo(groove = [groove_d(), groove_w(), frame_height]);
-echo(base_cutout = [base_cutout_w, base_cutout_h]);
+echo(base_cutout = [base_cutout_y1 - base_cutout_y0, base_cutout_h],
+     base_cutout_y = [base_cutout_y0, base_cutout_y1]);
 echo(tilt_deg = tilt_deg, floor_clearance = floor_clearance);
 echo(side_drop_base = floor_clearance, side_drop_break = drop_at_break());
 echo(side_height_break = drop_at_break() + frame_height);
@@ -180,12 +187,12 @@ echo(lid_opening = [
 module base_cutout() {
     translate([
         -eps,
-        (outer_width - base_cutout_w) / 2,
-        -eps
+        outer_width - base_cutout_y1,
+        frame_height - base_cutout_h
     ])
         cube([
             rail_base + 2 * eps,
-            base_cutout_w,
+            base_cutout_y1 - base_cutout_y0,
             base_cutout_h + eps
         ]);
 }
@@ -200,7 +207,7 @@ module frame_solid() {
         ])
             cube([
                 panel_length + panel_clearance,
-                panel_width + panel_clearance,
+                opening_width() + panel_clearance,
                 frame_height + 2 * eps
             ]);
         base_cutout();
