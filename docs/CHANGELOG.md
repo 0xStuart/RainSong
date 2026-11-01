@@ -1,9 +1,25 @@
 # Contract changelog
 
+## 2026-11-01
+
+- `ai-interface.md`: phone talks to a LAN/cloud AI container (Spark +
+  MusicGen). Meta API key lives in server env, not the app. Discovery is
+  mDNS `_rainsong-ai._tcp` and Wi-Fi scan first (loopback only as USB
+  fallback; rediscover if that dies). URL override for hosted boxes.
+  `POST /compose` returns a WAV loop plus arrangement header.
+  Reason: Stuart — one Docker service, easy phone setup, hostable later.
+
+## 2026-10-31
+
+- `mechanical.md`: XIAO 21.0 × 17.8 mm (Seeed wiki), LM393 module 20.5 ×
+  20.5 mm, typical Ø35 mm piezo, 1200 mAh LiPo outline still unmeasured.
+  Reason: firmware bring-up; CAD needs the sensor stack, not just the
+  solar frame.
+
 ## 2026-10-30
 
-- `mechanical.md`: frame is 144.5 mm wide (panel glues on top); base print
-  ≤ 220 mm; base cutout is Y 49–80 mm from the far edge. Reason: Stuart.
+- `mechanical.md`: far piece body is 80.5 mm (frame outer length 300.7 mm);
+  base print stays 220 mm. Reason: Stuart.
 
 ## 2026-10-29
 

@@ -1,0 +1,10 @@
+.env
+.gradle/
+build/
+local.properties
+.musicgen-venv/
+captures/
+.cxx/
+*.iml
+.idea/
+.DS_Store

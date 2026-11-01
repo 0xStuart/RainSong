@@ -1,0 +1,7 @@
+<resources>
+    <style name="Theme.RainSong" parent="android:Theme.Material.NoActionBar">
+        <item name="android:statusBarColor">@color/rain_bg</item>
+        <item name="android:navigationBarColor">@color/rain_bg</item>
+        <item name="android:windowBackground">@color/rain_bg</item>
+    </style>
+</resources>

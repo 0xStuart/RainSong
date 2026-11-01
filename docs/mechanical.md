@@ -1,5 +1,17 @@
 # Mechanical dimensions
 
+## Sensor electronics (firmware, 2026-10-31)
+
+Datasheet / listing sizes. Not caliper-measured unless noted. Enclosure must also fit USB-C on the XIAO short edge and the U.FL pigtail.
+
+| Item | Size | Source |
+|---|---|---|
+| XIAO ESP32C3 | 21.0 × 17.8 mm outline; ~3.5–4.2 mm thick | Seeed wiki. Older TDS said 21.0 × 17.5 mm. Single-sided parts, 2.54 mm pin pitch, 7 pins/side. |
+| LM393 shock module | 20.5 × 20.5 mm | Seller PDF for AliExpress `1005005142488820`. |
+| Piezo disc | Ø35 mm, 0.3–0.6 mm thick | Typical 35 mm brass disc. Confirm the disc on the bench. |
+| LiPo | 1200 mAh pouch on BAT+/BAT− | Pack outline **unmeasured** — need the actual cell. |
+| Strike plate | TBD | Must cover the disc; isolate from the housing so wind does not rattle it. |
+
 TBD: board, battery, strike plate, enclosure.
 
 ## Solar panel (Stuart, 2026-10-29)
@@ -9,8 +21,8 @@ TBD: board, battery, strike plate, enclosure.
 | Panel | 300 × 144.5 | Length × width. Thickness not given. |
 | Frame rails | 9 / 9 / 18 / 30 | Long sides 9 mm; far end 18 mm; **base end 30 mm**. |
 | Frame height | 15 | All round. |
-| Frame outer | 348 × 144.5 × 15 | Length 300+18+30; **width = panel** (144.5). Panel glues on top of the 9 mm long rails, not into the opening. |
-| Split | ~63% from base | Adjustable `split_frac` (or `split_x_abs`). Default keeps the **base print ≤ 220 mm** (0.632 × 348 = **220.1 mm** split, 220 mm base face). Kerf 0.2 mm. |
+| Frame outer | 300.7 × 144.5 × 15 | **Base print 220 mm** + kerf 0.2 + **far body 80.5 mm**. Width = panel (144.5). Panel glues on top. |
+| Split | 220 mm from base | Base face 220 mm; far body 80.5 mm (far print 92.5 mm with the 12 mm tongue). Kerf 0.2 mm. |
 | Joint | tongue and groove | Full height, through the rail (visible top and bottom). Tongue **12 × 3 × 15 mm** on the far piece; matching groove in the base piece (0.3 mm Y clearance, 0.4 mm extra depth). One on each 9 mm rail. |
 | Base cutout | 31 × 9.9 | On the 30 mm base end, from the **top down**. Looking from the lowest (base) end, Y **49–80 mm from the far edge**. |
 | Tilt | 40° | Frame sits on the floor at 40°. Long-side drop = `floor_clearance + x * tan(tilt)`. |
@@ -23,4 +35,4 @@ TBD: board, battery, strike plate, enclosure.
 | Box lid | 88.5 × 83.2 × 8 | Slots into the open end. Solid 3 mm cover + 5 mm hollow plug (3 mm rim), 0.4 mm clearance. |
 | Box wings | 3 × 24 mm, flush with the back | 3 mm thick (same as the walls), **24 mm** wide (9 mm rail + 15 mm flare), flush with the closed back. Four Ø3.2 mm (M3) holes through the wings along X into Ø3.8 mm × 6 mm inserts in the **split face** of the supports. No holes in the long-side rails. |
 
-Through-frame opening 300 × 126.5 mm; panel glues onto the 9 mm long rails. Printed in two length pieces. Not final until Stuart says so.
+Through-frame opening ~252.7 × 126.5 mm; panel glues onto the rails. Printed in two length pieces. Not final until Stuart says so.

@@ -1,0 +1,27 @@
+# LAN (this PC + phone on the same Wi-Fi): host networking so mDNS works.
+#   cp .env.example .env   # put META_API_KEY in .env
+#   docker compose up --build
+#
+# Cloud / VPS: delete network_mode, add
+#   ports: ["8765:8765"]
+# and set RAINSONG_MDNS=0. Point the app's AI server URL at the public host.
+
+services:
+  rainsong-ai:
+    build: .
+    container_name: rainsong-ai
+    restart: unless-stopped
+    network_mode: host
+    env_file:
+      - .env
+    environment:
+      HF_HOME: /models
+      RAINSONG_PORT: ${RAINSONG_PORT:-8765}
+      MUSICGEN_MODEL: ${MUSICGEN_MODEL:-facebook/musicgen-small}
+      RAINSONG_MDNS: ${RAINSONG_MDNS:-1}
+      META_API_KEY: ${META_API_KEY:-}
+    volumes:
+      - hf:/models
+
+volumes:
+  hf:

@@ -1,6 +1,7 @@
 // RainSong solar-panel frame (not final until Stuart says so)
 // Panel 300 x 144.5 mm glues on top of the frame (not dropped into the
 // opening). Frame is as wide as the panel; 9 mm long rails sit under it.
+// Length is base print 220 mm + far body 80.5 mm (+ kerf).
 // Rails: 9 mm on both long sides, 18 mm far end, 30 mm base end, 15 mm high.
 //
 // Split along the length so it fits a printer bed. The two halves join with
@@ -42,11 +43,10 @@ panel_clearance = 0.0;
 
 kerf = 0.2;             // gap between the two printed faces, mm
 
-// Break location, measured from the base end as a fraction of outer length.
-// Default keeps the base print ≤ 220 mm on the 348 mm frame (~0.632).
-// Keep the split in the long rails (not in the 30 mm base or 18 mm end).
-max_base_print = 220.0; // mm, longest the base piece may be
-split_frac  = (max_base_print + kerf / 2) / (rail_base + panel_length + rail_end);
+// Break: base print 220 mm, far body 80.5 mm. Keep the split in the long
+// rails (not in the 30 mm base or 18 mm end).
+max_base_print = 220.0; // mm, base piece length
+max_far_body   = 80.5;  // mm, far piece body (tongue extra is on top of this)
 split_x_abs = -1;       // set >= 0 to place the break at an absolute X instead
 
 // Tongue (far piece) / groove (base piece). Full frame height, through
@@ -108,8 +108,9 @@ lid_gap        = 20.0;  // mm, assembled preview: sit this far beside the frame
 eps = 0.02;
 $fn = 32;
 
-outer_length = rail_base + panel_length + rail_end;
+outer_length = max_base_print + kerf + max_far_body;
 outer_width  = panel_width;  // panel sits on top; no extra width outside the rails
+split_frac   = (max_base_print + kerf / 2) / outer_length;
 
 function split_x() =
     split_x_abs >= 0 ? split_x_abs : split_frac * outer_length;
@@ -127,6 +128,7 @@ function side_drop(x) = floor_clearance + x * tan(tilt_deg);
 function drop_at_break() = side_drop(base_face());
 
 function opening_width() = outer_width - 2 * rail_long;
+function opening_length() = outer_length - rail_base - rail_end;
 function box_outer_y() = opening_width() - 2 * flare_extra - 2 * box_y_clear;
 function box_z_top() = -box_under;
 function box_z_bot() = box_z_top() - box_z;
@@ -159,6 +161,7 @@ assert(
 );
 
 echo(outer = [outer_length, outer_width, frame_height]);
+echo(opening = [opening_length(), opening_width()]);
 echo(split_x = split_x(), split_frac = split_frac);
 echo(base_len = base_face(), far_len = outer_length - far_face() + tongue_len);
 echo(tongue = [tongue_len, tongue_w, tongue_h]);
@@ -206,7 +209,7 @@ module frame_solid() {
             -eps
         ])
             cube([
-                panel_length + panel_clearance,
+                opening_length() + panel_clearance,
                 opening_width() + panel_clearance,
                 frame_height + 2 * eps
             ]);
