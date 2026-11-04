@@ -54,6 +54,7 @@ fun ScanScreen(
     onAiUrl: (String) -> Unit,
     onDropVolume: (Float) -> Unit,
     onMusicVolume: (Float) -> Unit,
+    onCloudDemo: () -> Unit = {},
 ) {
     var permissionNote by remember { mutableStateOf<String?>(null) }
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -95,6 +96,12 @@ fun ScanScreen(
             modifier = Modifier.fillMaxWidth(),
         ) {
             Text("Scan for RainSong")
+        }
+        TextButton(
+            onClick = onCloudDemo,
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text("Open clouds (no sensor)")
         }
         state.statusMessage?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
         if (state.scanned.isEmpty()) {
@@ -274,7 +281,7 @@ private fun connectionLine(state: UiState): String {
     val kind = when (state.transport) {
         TransportKind.Ble -> "sensor"
         TransportKind.Tcp -> "TCP ${state.tcpHost}:${state.tcpPort}"
-        TransportKind.None -> ""
+        TransportKind.None -> "demo"
     }
     return when {
         state.connected -> "Listening · $kind"

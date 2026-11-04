@@ -38,6 +38,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
+        when {
+            intent?.getBooleanExtra(EXTRA_DEMO_CLOUDS, false) == true -> {
+                withNotification { vm.startCloudDemo() }
+            }
+            intent?.getBooleanExtra(EXTRA_DEMO_TCP, false) == true -> {
+                withNotification { vm.connectTcp() }
+            }
+        }
         setContent {
             RainSongTheme {
                 val state by vm.state.collectAsState()
@@ -50,6 +58,7 @@ class MainActivity : ComponentActivity() {
                             onAiUrl = vm::setAiUrl,
                             onDropVolume = vm::setDropVolume,
                             onMusicVolume = vm::setMusicVolume,
+                            onCloudDemo = { withNotification { vm.startCloudDemo() } },
                         )
                     }
                     Screen.Play -> Surface(modifier = Modifier.fillMaxSize()) {
@@ -76,5 +85,12 @@ class MainActivity : ComponentActivity() {
         } else {
             block()
         }
+    }
+
+    companion object {
+        /** Emulator / harness: launch with `--ez demo_tcp true` to open TCP play. */
+        const val EXTRA_DEMO_TCP = "demo_tcp"
+        /** Skip sensor connect — open the cloud play screen only. */
+        const val EXTRA_DEMO_CLOUDS = "demo_clouds"
     }
 }

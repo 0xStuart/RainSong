@@ -158,6 +158,19 @@ class RainSongSession(context: Context) {
         RainSongService.start(app)
     }
 
+    /** Play screen with clouds only — no BLE/TCP sensor. Tap clouds for drops. */
+    fun startCloudDemo() {
+        enterPlay(TransportKind.None)
+        _state.update {
+            it.copy(
+                connected = true,
+                statusMessage = "Demo · tap the clouds",
+                reconnecting = false,
+            )
+        }
+        RainSongService.start(app)
+    }
+
     fun setTcpHost(host: String) {
         _state.update { it.copy(tcpHost = host) }
     }

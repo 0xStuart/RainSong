@@ -1,4 +1,6 @@
 .env
 __pycache__/
 .models/
+.hf_cache/
+.venv/
 *.pyc

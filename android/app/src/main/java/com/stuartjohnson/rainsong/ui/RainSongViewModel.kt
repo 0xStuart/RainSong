@@ -44,6 +44,9 @@ class RainSongViewModel(app: Application) : AndroidViewModel(app) {
 
     fun startScan() = session.startScan()
     fun connectBle(address: String) = session.connectBle(address)
+    fun connectTcp(host: String = state.value.tcpHost, port: Int = state.value.tcpPort) =
+        session.connectTcp(host, port)
+    fun startCloudDemo() = session.startCloudDemo()
     fun setAiUrl(value: String) = session.setAiUrl(value)
     fun setDropVolume(value: Float) = session.setDropVolume(value)
     fun setMusicVolume(value: Float) = session.setMusicVolume(value)

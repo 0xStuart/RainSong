@@ -7,4 +7,8 @@ build/
 local.properties
 .idea/
 *.gcode
-presentation/renders/
+presentation/
+.cursor/
+ai/.venv/
+ai/.hf_cache/
+
