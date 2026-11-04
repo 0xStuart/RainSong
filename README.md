@@ -6,6 +6,8 @@ A piezo under a strike plate hears a drop. A Seeed XIAO ESP32C3 sends the hit ov
 
 Entry for the Meta Global AI Developer Hackathon (Cerebral Valley), Indie track.
 
+**Demo video:** [RainSong on YouTube](https://www.youtube.com/watch?v=43-K7Legre0)
+
 ## How it works
 
 ```
@@ -65,6 +67,7 @@ pio run -t upload
 
 Advertises as **RainSong**. One BLE notify per debounced strike. Optional TCP `:17321` exists only as an emulator harness (same 8-byte drop frame).
 
-## Secrets
+## Suggested improvements
 
-Keys stay out of git. Use `ai/.env` for `META_API_KEY`. `local.properties` is gitignored too.
+- The wakeup sensitivity is adjusted by a 10k pot and doesn’t allow for much fine adjustment. Replace with a multi-turn pot, or better still make it software-controllable.
+- iOS support.
